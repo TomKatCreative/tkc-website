@@ -120,12 +120,14 @@
             var newBodyId = doc.body.id;
             if (!newContent) throw new Error('no .content');
 
+            // Swap body ID immediately so background-color transitions in parallel
+            document.body.id = newBodyId;
+
             var oldContent = document.querySelector('.content');
             oldContent.style.transition = 'opacity 150ms ease';
             oldContent.style.opacity = '0';
 
             setTimeout(function () {
-              document.body.id = newBodyId;
               oldContent.replaceWith(newContent);
               newContent.style.opacity = '0';
               newContent.style.transition = 'opacity 150ms ease';
