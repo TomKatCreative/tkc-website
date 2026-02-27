@@ -1,0 +1,44 @@
+---
+layout: base.njk
+page_id: work
+background: gallery-show
+pagination:
+  data: allProjects
+  size: 1
+  alias: project
+eleventyComputed:
+  permalink: "/gallery/{{ project.type }}/{{ project.slug }}/"
+---
+<div class="content">
+  <div class="show-grid">
+    <div class="show-info">
+      <span style="position:relative">
+        <a href="/gallery/{{ project.type }}/"><span><i class="fa-solid fa-arrow-left"></i></span> Go Back</a>
+      </span>
+      {% if not project.siteUrl %}
+        <h4>{{ project.title }}</h4>
+      {% elif "github" in project.siteUrl %}
+        <a href="{{ project.siteUrl }}"><h4>{{ project.title }} <i class="fa-brands fa-github"></i></h4></a>
+      {% else %}
+        <a href="{{ project.siteUrl }}"><h4>{{ project.title }}</h4></a>
+      {% endif %}
+      <p id="project-description">{{ project.description }}</p>
+    </div>
+    <div class="show-project">
+      {% if project.embedUrls %}
+        {% for embedUrl in project.embedUrls %}
+          <hr>
+          <div class="embed-container">
+            <iframe src="https://{{ embedUrl }}" width="640" height="360" frameborder="0" allowfullscreen></iframe>
+          </div>
+        {% endfor %}
+      {% elif project.imagePaths %}
+        {% for imagePath in project.imagePaths %}
+          <a href="/img/{{ imagePath }}" class="glightbox" data-gallery="project-gallery" data-title="{{ project.title }}">
+            <img class="main-image" src="/img/{{ imagePath }}" alt="{{ project.title }}">
+          </a>
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+</div>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TomKat Creative - Web, Animation & Illustration Portfolio">
+    <link rel="icon" href="/img/tk-favicon.png">
+    <title>TomKat Creative</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@300;400;500;700&family=Cookie&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome 7 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" crossorigin="anonymous">
+
+    <!-- GLightbox -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.1/dist/css/glightbox.min.css">
+
+    <!-- Site CSS -->
+    <link href="/css/main.css" rel="stylesheet">
+    <link href="/css/lily-hover.css" rel="stylesheet">
+  </head>
+  <body id="{{ background }}-background">
+    <div class="grid-container">
+      <header class="header">
+        <div class="banner">
+          <a href="/"><img src="/img/webbanner.svg" alt="TomKat Creative"></a>
+        </div>
+      </header>
+
+      {% include "nav.njk" %}
+
+      {{ content | safe }}
+
+      <div class="footer">
+        {% include "footer.njk" %}
+      </div>
+    </div>
+
+    <!-- GLightbox JS -->
+    <script src="https://cdn.jsdelivr.net/npm/glightbox@3.3.1/dist/js/glightbox.min.js"></script>
+    <script>
+      // Initialize GLightbox
+      const lightbox = GLightbox({ selector: '.glightbox' });
+
+      // Vanilla JS dropdown toggle
+      document.addEventListener('DOMContentLoaded', function () {
+        const toggle = document.querySelector('.nav-dropdown-toggle');
+        const menu = document.querySelector('.dropdown-menu');
+        if (toggle && menu) {
+          toggle.addEventListener('click', function (e) {
+            e.preventDefault();
+            menu.classList.toggle('show');
+            toggle.setAttribute('aria-expanded', menu.classList.contains('show'));
+          });
+          // Close dropdown when clicking outside
+          document.addEventListener('click', function (e) {
+            if (!toggle.contains(e.target) && !menu.contains(e.target)) {
+              menu.classList.remove('show');
+              toggle.setAttribute('aria-expanded', 'false');
+            }
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

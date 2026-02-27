@@ -1,0 +1,17 @@
+---
+layout: base.njk
+page_id: work
+background: gallery
+permalink: /gallery/illustration/
+---
+<div class="content">
+  <div class="gallery-grid-container">
+    {% for project in projects.illustration %}
+      <a href="/gallery/illustration/{{ project.slug }}/">
+        <div class="gallery-grid-item" style="background:url('/img/thumbnails/{{ project.thumbPath }}') no-repeat; background-size: cover">
+          <p>{{ project.title }}</p>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+</div>
