@@ -42,28 +42,129 @@
     <!-- GLightbox JS -->
     <script src="https://cdn.jsdelivr.net/npm/glightbox@3.3.1/dist/js/glightbox.min.js"></script>
     <script>
-      // Initialize GLightbox
-      const lightbox = GLightbox({ selector: '.glightbox' });
-
-      // Vanilla JS dropdown toggle
-      document.addEventListener('DOMContentLoaded', function () {
-        const toggle = document.querySelector('.nav-dropdown-toggle');
-        const menu = document.querySelector('.dropdown-menu');
-        if (toggle && menu) {
-          toggle.addEventListener('click', function (e) {
-            e.preventDefault();
-            menu.classList.toggle('show');
-            toggle.setAttribute('aria-expanded', menu.classList.contains('show'));
-          });
-          // Close dropdown when clicking outside
-          document.addEventListener('click', function (e) {
-            if (!toggle.contains(e.target) && !menu.contains(e.target)) {
-              menu.classList.remove('show');
-              toggle.setAttribute('aria-expanded', 'false');
-            }
-          });
+      /* ── Dropdown (event delegation — survives content swaps) ── */
+      document.addEventListener('click', function (e) {
+        var toggle = document.querySelector('.nav-dropdown-toggle');
+        var menu = document.querySelector('.dropdown-menu');
+        if (!toggle || !menu) return;
+        if (e.target.closest('.nav-dropdown-toggle')) {
+          e.preventDefault();
+          menu.classList.toggle('show');
+          toggle.setAttribute('aria-expanded', menu.classList.contains('show'));
+        } else if (!menu.contains(e.target)) {
+          menu.classList.remove('show');
+          toggle.setAttribute('aria-expanded', 'false');
         }
       });
+
+      /* ── GLightbox (re-callable) ── */
+      var lightbox;
+      function initLightbox() {
+        if (lightbox && lightbox.destroy) lightbox.destroy();
+        lightbox = GLightbox({ selector: '.glightbox' });
+      }
+      initLightbox();
+
+      /* ── SPA Router ── */
+      (function () {
+        if (!window.history || !window.DOMParser || !window.fetch) return;
+
+        var isNavigating = false;
+
+        function isInternalLink(a) {
+          if (!a || !a.href) return false;
+          if (a.target === '_blank') return false;
+          if (a.origin !== location.origin) return false;
+          if (a.classList.contains('glightbox')) return false;
+          if (a.getAttribute('href') === '#') return false;
+          return true;
+        }
+
+        function updateNav(path) {
+          var id = 'home';
+          if (path.indexOf('/contact') === 0) id = 'contact';
+          else if (path.indexOf('/gallery') === 0) id = 'work';
+          document.querySelectorAll('.nav-link').forEach(function (link) {
+            link.classList.remove('active');
+          });
+          if (id === 'home') {
+            var homeLink = document.querySelector('.nav-link[href="/"]');
+            if (homeLink) homeLink.classList.add('active');
+          } else if (id === 'contact') {
+            var contactLink = document.querySelector('.nav-link[href="/contact/"]');
+            if (contactLink) contactLink.classList.add('active');
+          } else if (id === 'work') {
+            var workLink = document.querySelector('.nav-dropdown-toggle');
+            if (workLink) workLink.classList.add('active');
+          }
+        }
+
+        function navigate(url, pushState) {
+          if (isNavigating) return;
+          isNavigating = true;
+
+          // Close dropdown
+          var menu = document.querySelector('.dropdown-menu');
+          if (menu) {
+            menu.classList.remove('show');
+            var toggle = document.querySelector('.nav-dropdown-toggle');
+            if (toggle) toggle.setAttribute('aria-expanded', 'false');
+          }
+
+          fetch(url, { credentials: 'same-origin' }).then(function (res) {
+            if (!res.ok) throw new Error(res.status);
+            return res.text();
+          }).then(function (html) {
+            var doc = new DOMParser().parseFromString(html, 'text/html');
+            var newContent = doc.querySelector('.content');
+            var newBodyId = doc.body.id;
+            if (!newContent) throw new Error('no .content');
+
+            var oldContent = document.querySelector('.content');
+            oldContent.style.transition = 'opacity 150ms ease';
+            oldContent.style.opacity = '0';
+
+            setTimeout(function () {
+              document.body.id = newBodyId;
+              oldContent.replaceWith(newContent);
+              newContent.style.opacity = '0';
+              newContent.style.transition = 'opacity 150ms ease';
+              // Force reflow before fading in
+              newContent.offsetHeight;
+              newContent.style.opacity = '1';
+
+              var parsed = document.createElement('a');
+              parsed.href = url;
+              updateNav(parsed.pathname);
+
+              if (pushState !== false) {
+                history.pushState(null, '', url);
+              }
+
+              window.scrollTo(0, 0);
+              initLightbox();
+              isNavigating = false;
+            }, 150);
+          }).catch(function () {
+            isNavigating = false;
+            location.href = url;
+          });
+        }
+
+        // Intercept internal link clicks
+        document.addEventListener('click', function (e) {
+          var a = e.target.closest('a');
+          if (!isInternalLink(a)) return;
+          if (a.href === location.href) { e.preventDefault(); return; }
+          e.preventDefault();
+          navigate(a.href);
+        });
+
+        // Handle back/forward
+        window.addEventListener('popstate', function () {
+          navigate(location.href, false);
+        });
+      })();
     </script>
   </body>
 </html>
